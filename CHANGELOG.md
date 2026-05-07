@@ -2,6 +2,13 @@
 
 All notable changes to this module are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Module versioning: `<odoo_major>.0.<major>.<minor>.<patch>`.
 
+## [16.0.1.0.1] - 2026-05-07
+
+* Fix: `numbercall=-1` added on every cron record. v14-v17 ir.cron has
+  `numbercall = fields.Integer(default=1, ...)`, so a freshly-installed
+  cron with no explicit numbercall fires once and the scheduler's
+  UPDATE clause sets `active=False`. v18 dropped the field entirely.
+
 ## [16.0.1.0.0] - 2026-05-07
 
 Initial public release for Odoo 16. Feature parity with the v17 listing
