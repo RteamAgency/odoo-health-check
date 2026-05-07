@@ -2,32 +2,20 @@
 
 All notable changes to this module are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Module versioning: `<odoo_major>.0.<major>.<minor>.<patch>`.
 
-## [16.0.1.0.0] - 2026-05-07
+## [15.0.1.0.0] - 2026-05-07
 
-Initial public release for Odoo 16. Feature parity with the v17 listing
-release `17.0.1.0.0` plus the changes required for Odoo 16's ORM and
-view stack:
+Initial public release for Odoo 15. Branched from the v16 listing release
+`16.0.1.0.0`. v15 and v16 share the settings-view layout, the `<tree>`
+list-view tag, the 3-arg `_callback(cron_name, server_action_id, job_id)`
+signature, and the QWeb (`{{ }}` / `t-out` / `t-if`) mail-template
+syntax - so no code changes were required beyond the version stamp.
 
-* Settings view rewritten from the v17 `<app>/<block>/<setting>` shortcut
-  tags to the v14-v16 div-based pattern (`<div class="app_settings_block">`
-  / `<div class="o_settings_container">` / `<div class="o_setting_box">`).
-  Xpath target switched from `//form` to `//div[hasclass('settings')]`.
-* `<page invisible="...">` replaced with `attrs="{'invisible': [...]}"`
-  domain-style on the two notebook pages (cron history Error Traceback
-  page, disk Details page) - the new short-form `invisible="..."` attr
-  on view nodes is v17+.
-* Removed the `web.assets_web_dark` manifest entry and the
-  `static/src/scss/dark_mode_icon.scss` asset - dark mode bundle and
-  body-class gating only exist on Odoo 18 Enterprise.
-* `_callback` override and 3-arg test fixtures are unchanged from v17;
-  v14-v17 all share the same `(cron_name, server_action_id, job_id)`
-  signature.
-* Reset module version to 16.0.1.0.0 (first publication on the v16
+* Reset module version to 15.0.1.0.0 (first publication on the v15
   apps.odoo.com listing per Constitution §6).
 * Listing description, README, and listing chrome (badge, monospace
-  pill) updated to mention Odoo 16.
+  pill) updated to mention Odoo 15.
 
-Features brought forward from the v17 listing:
+Features brought forward from the v16 listing:
 
 * At-a-glance dashboard (cron failures 24h/7d, disk root and filestore
   current usage, latest PG monthly report)
