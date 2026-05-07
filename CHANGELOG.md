@@ -2,6 +2,17 @@
 
 All notable changes to this module are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Module versioning: `<odoo_major>.0.<major>.<minor>.<patch>`.
 
+## [17.0.1.0.1] - 2026-05-07
+
+* Fix: `numbercall=-1` added on every cron record. v14-v17 ir.cron has
+  `numbercall = fields.Integer(default=1, ...)`, so a freshly-installed
+  cron with no explicit numbercall fires once and the scheduler's
+  UPDATE clause sets `active=False`. v18 dropped the field entirely.
+  Existing v17.0.1.0.0 installs are NOT auto-fixed by upgrade because
+  `data/ir_cron_data.xml` has `noupdate="1"`; affected operators must
+  toggle each Odoo Health Check cron's `Number of Calls` to `-1`
+  manually (Settings -> Technical -> Scheduled Actions).
+
 ## [17.0.1.0.0] - 2026-04-30
 
 Initial public release for Odoo 17. Feature parity with the v18 listing
