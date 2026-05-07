@@ -5,8 +5,8 @@ Odoo Health Check
 Daily health check for your Odoo. Catch cron failures, monitor disk
 space, see PostgreSQL growth - before your users complain.
 
-.. image:: https://img.shields.io/badge/odoo-17-714B67.svg
-    :alt: Odoo 17
+.. image:: https://img.shields.io/badge/odoo-16-714B67.svg
+    :alt: Odoo 16
 
 .. image:: https://img.shields.io/badge/license-LGPL--3-00D4AA.svg
     :alt: License: LGPL-3
@@ -122,7 +122,7 @@ Settings:
 Technical details
 =================
 
-* **Targets:** Odoo 17 Enterprise self-hosted. Community installations
+* **Targets:** Odoo 16 Enterprise self-hosted. Community installations
   also work - the module depends only on ``base`` and ``mail``.
 * **License:** LGPL-3, free.
 * **Security:** all menus and records restricted to

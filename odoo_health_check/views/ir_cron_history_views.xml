@@ -42,7 +42,7 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Error Traceback" invisible="state != 'failed'">
+                        <page string="Error Traceback" attrs="{'invisible': [('state', '!=', 'failed')]}">
                             <field name="error_traceback" widget="text" nolabel="1"/>
                         </page>
                     </notebook>

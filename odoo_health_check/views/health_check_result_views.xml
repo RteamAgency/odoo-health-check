@@ -45,7 +45,7 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Details" invisible="not details_json">
+                        <page string="Details" attrs="{'invisible': [('details_json', '=', False)]}">
                             <field name="details_json" widget="text" nolabel="1"/>
                         </page>
                     </notebook>

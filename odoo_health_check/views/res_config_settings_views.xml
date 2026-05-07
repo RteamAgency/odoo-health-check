@@ -7,41 +7,75 @@
         <field name="priority" eval="50"/>
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//form" position="inside">
-                <app data-string="Health Check" string="Health Check" name="odoo_health_check" groups="base.group_system">
-                    <block title="Notifications" name="health_check_notifications">
-                        <setting id="health_check_notify_emails" string="Cron Failure Emails"
-                                 help="Comma-separated list of recipients. Leave empty to disable email alerts.">
-                            <field name="odoo_health_notify_emails" placeholder="ops@example.com, admin@example.com"/>
-                        </setting>
-                    </block>
-                    <block title="Retention" name="health_check_retention">
-                        <setting id="health_check_retention_days" string="History Retention (days)"
-                                 help="Cron execution history older than this is deleted daily. Zero or negative disables cleanup.">
-                            <field name="odoo_health_retention_days"/>
-                        </setting>
-                    </block>
-                    <block title="Disk Monitoring" name="health_check_disk">
-                        <setting id="health_check_disk_warn_pct" string="Warning Threshold (%)"
-                                 help="Disk usage above this percentage is flagged 'warn'. Default 80.">
-                            <field name="odoo_health_disk_warn_pct"/>
-                        </setting>
-                        <setting id="health_check_disk_critical_pct" string="Critical Threshold (%)"
-                                 help="Disk usage above this percentage is flagged 'critical'. Default 90.">
-                            <field name="odoo_health_disk_critical_pct"/>
-                        </setting>
-                        <setting id="health_check_disk_alert_emails" string="Disk Alert Emails"
-                                 help="Comma-separated recipients. One email per worsening transition (ok-&gt;warn, ok-&gt;critical, warn-&gt;critical). Leave empty to disable.">
-                            <field name="odoo_health_disk_alert_emails" placeholder="ops@example.com, sysadmin@example.com"/>
-                        </setting>
-                    </block>
-                    <block title="PostgreSQL Monthly Report" name="health_check_pg_report">
-                        <setting id="health_check_pg_report_emails" string="PG Report Emails"
-                                 help="Comma-separated recipients for the monthly PostgreSQL growth report (sent on the 1st of each month at 08:00). Leave empty to disable email - the report row is still created.">
-                            <field name="odoo_health_pg_report_emails" placeholder="ops@example.com, dba@example.com"/>
-                        </setting>
-                    </block>
-                </app>
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block o_not_app" data-string="Health Check" string="Health Check" data-key="odoo_health_check" groups="base.group_system">
+                    <h2>Notifications</h2>
+                    <div class="row mt16 o_settings_container" name="health_check_notifications">
+                        <div class="col-12 col-lg-6 o_setting_box" id="health_check_notify_emails">
+                            <div class="o_setting_right_pane">
+                                <label for="odoo_health_notify_emails" string="Cron Failure Emails"/>
+                                <div class="text-muted">Comma-separated list of recipients. Leave empty to disable email alerts.</div>
+                                <div class="content-group">
+                                    <field name="odoo_health_notify_emails" placeholder="ops@example.com, admin@example.com"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <h2>Retention</h2>
+                    <div class="row mt16 o_settings_container" name="health_check_retention">
+                        <div class="col-12 col-lg-6 o_setting_box" id="health_check_retention_days">
+                            <div class="o_setting_right_pane">
+                                <label for="odoo_health_retention_days" string="History Retention (days)"/>
+                                <div class="text-muted">Cron execution history older than this is deleted daily. Zero or negative disables cleanup.</div>
+                                <div class="content-group">
+                                    <field name="odoo_health_retention_days"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <h2>Disk Monitoring</h2>
+                    <div class="row mt16 o_settings_container" name="health_check_disk">
+                        <div class="col-12 col-lg-6 o_setting_box" id="health_check_disk_warn_pct">
+                            <div class="o_setting_right_pane">
+                                <label for="odoo_health_disk_warn_pct" string="Warning Threshold (%)"/>
+                                <div class="text-muted">Disk usage above this percentage is flagged 'warn'. Default 80.</div>
+                                <div class="content-group">
+                                    <field name="odoo_health_disk_warn_pct"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" id="health_check_disk_critical_pct">
+                            <div class="o_setting_right_pane">
+                                <label for="odoo_health_disk_critical_pct" string="Critical Threshold (%)"/>
+                                <div class="text-muted">Disk usage above this percentage is flagged 'critical'. Default 90.</div>
+                                <div class="content-group">
+                                    <field name="odoo_health_disk_critical_pct"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" id="health_check_disk_alert_emails">
+                            <div class="o_setting_right_pane">
+                                <label for="odoo_health_disk_alert_emails" string="Disk Alert Emails"/>
+                                <div class="text-muted">Comma-separated recipients. One email per worsening transition (ok-&gt;warn, ok-&gt;critical, warn-&gt;critical). Leave empty to disable.</div>
+                                <div class="content-group">
+                                    <field name="odoo_health_disk_alert_emails" placeholder="ops@example.com, sysadmin@example.com"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <h2>PostgreSQL Monthly Report</h2>
+                    <div class="row mt16 o_settings_container" name="health_check_pg_report">
+                        <div class="col-12 col-lg-6 o_setting_box" id="health_check_pg_report_emails">
+                            <div class="o_setting_right_pane">
+                                <label for="odoo_health_pg_report_emails" string="PG Report Emails"/>
+                                <div class="text-muted">Comma-separated recipients for the monthly PostgreSQL growth report (sent on the 1st of each month at 08:00). Leave empty to disable email - the report row is still created.</div>
+                                <div class="content-group">
+                                    <field name="odoo_health_pg_report_emails" placeholder="ops@example.com, dba@example.com"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </xpath>
         </field>
     </record>
