@@ -1,12 +1,12 @@
 {
     "name": "Odoo Health Check",
-    "version": "15.0.1.0.0",
+    "version": "14.0.1.0.0",
     "summary": "Cron execution history, disk monitoring, monthly PostgreSQL growth reports",
     "description": """
 Odoo Health Check
 =================
 
-Daily health check for your Odoo 15 Enterprise self-hosted installation.
+Daily health check for your Odoo 14 Enterprise self-hosted installation.
 
 Features
 --------
@@ -20,7 +20,7 @@ Ukrainian (uk), German (de), Spanish (es), Romanian (ro), Polish (pl),
 Arabic (ar). Translations apply automatically based on the user's
 language preference.
 
-Targeted at Odoo 15 Enterprise. Community may work but is not tested.
+Targeted at Odoo 14 Enterprise. Community may work but is not tested.
 """,
     "author": "Rteam",
     "website": "https://rteam.agency",

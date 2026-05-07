@@ -9,6 +9,7 @@
         <field name="user_id" ref="base.user_root"/>
         <field name="interval_number">1</field>
         <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
         <field name="active" eval="True"/>
         <field name="nextcall" eval="(DateTime.now() + timedelta(hours=4)).strftime('%Y-%m-%d %H:%M:%S')"/>
     </record>
@@ -21,6 +22,7 @@
         <field name="user_id" ref="base.user_root"/>
         <field name="interval_number">1</field>
         <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
         <field name="active" eval="True"/>
         <field name="nextcall" eval="(DateTime.now() + timedelta(minutes=5)).strftime('%Y-%m-%d %H:%M:%S')"/>
     </record>
@@ -33,6 +35,7 @@
         <field name="user_id" ref="base.user_root"/>
         <field name="interval_number">1</field>
         <field name="interval_type">months</field>
+        <field name="numbercall">-1</field>
         <field name="active" eval="True"/>
         <field name="nextcall" eval="(DateTime.now().replace(day=1, hour=8, minute=0, second=0, microsecond=0) + relativedelta(months=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
     </record>
