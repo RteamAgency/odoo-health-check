@@ -28,80 +28,65 @@ class HealthCheckDashboard(models.Model):
     failures_24h = fields.Integer(
         string="Cron failures (24h)",
         compute="_compute_dashboard",
-        readonly=True,
     )
     failures_7d = fields.Integer(
         string="Cron failures (7d)",
         compute="_compute_dashboard",
-        readonly=True,
     )
     history_total_7d = fields.Integer(
         string="Cron runs (7d)",
         compute="_compute_dashboard",
-        readonly=True,
     )
 
     disk_root_status = fields.Selection(
         [("ok", "OK"), ("warn", "Warning"), ("critical", "Critical"),
          ("error", "Error"), ("unknown", "No data yet")],
         compute="_compute_dashboard",
-        readonly=True,
     )
     disk_root_used_pct = fields.Float(
         compute="_compute_dashboard",
-        readonly=True,
         digits=(5, 2),
     )
     disk_root_summary = fields.Char(
         compute="_compute_dashboard",
-        readonly=True,
     )
     disk_root_at = fields.Datetime(
         string="Last disk:root sample",
         compute="_compute_dashboard",
-        readonly=True,
     )
 
     disk_filestore_status = fields.Selection(
         [("ok", "OK"), ("warn", "Warning"), ("critical", "Critical"),
          ("error", "Error"), ("unknown", "No data yet")],
         compute="_compute_dashboard",
-        readonly=True,
     )
     disk_filestore_used_pct = fields.Float(
         compute="_compute_dashboard",
-        readonly=True,
         digits=(5, 2),
     )
     disk_filestore_summary = fields.Char(
         compute="_compute_dashboard",
-        readonly=True,
     )
     disk_filestore_at = fields.Datetime(
         string="Last filestore sample",
         compute="_compute_dashboard",
-        readonly=True,
     )
 
     last_pg_report_at = fields.Datetime(
         string="Last PG report",
         compute="_compute_dashboard",
-        readonly=True,
     )
     last_pg_report_db_size = fields.Char(
         string="DB size",
         compute="_compute_dashboard",
-        readonly=True,
     )
     last_pg_report_db_delta = fields.Char(
         string="DB delta vs previous",
         compute="_compute_dashboard",
-        readonly=True,
     )
     last_pg_report_table = fields.Char(
         string="Largest table",
         compute="_compute_dashboard",
-        readonly=True,
     )
 
     # No @api.depends on purpose: inputs live in other models. With
