@@ -6,3 +6,4 @@ from . import test_disk_check
 from . import test_disk_alert
 from . import test_pg_report
 from . import test_dashboard
+from . import test_dashboard_success_rate

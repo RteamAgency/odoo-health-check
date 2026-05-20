@@ -2,6 +2,17 @@
 
 All notable changes to this module are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Module versioning: `<odoo_major>.0.<major>.<minor>.<patch>`.
 
+## [18.0.1.13.0] - 2026-05-20
+
+### Added
+- **health.check.dashboard**: new computed field `success_rate_7d`
+  (float, 0-100) reporting the share of successful cron runs over the
+  last 7 days, sourced from `ir.cron.history`. The denominator counts
+  completed runs only (`success` + `failed`); `running` rows are
+  excluded as they have no outcome yet, and an empty window yields
+  `0.0` instead of dividing by zero. Surfaced on the dashboard form
+  alongside the other cron metrics.
+
 ## [18.0.1.12.4] - 2026-05-20
 
 Backport of the version-agnostic fixes from the 14.0 review (OHC-14).

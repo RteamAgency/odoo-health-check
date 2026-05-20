@@ -37,6 +37,11 @@ class HealthCheckDashboard(models.Model):
         string="Cron runs (7d)",
         compute="_compute_dashboard",
     )
+    success_rate_7d = fields.Float(
+        string="Cron success rate (7d, %)",
+        compute="_compute_dashboard",
+        digits=(5, 2),
+    )
 
     disk_root_status = fields.Selection(
         [("ok", "OK"), ("warn", "Warning"), ("critical", "Critical"),
@@ -111,18 +116,32 @@ class HealthCheckDashboard(models.Model):
     def _compute_cron_health(self):
         History = self.env["ir.cron.history"]
         now = fields.Datetime.now()
+        week_start = now - timedelta(days=7)
+        failures_7d = History.search_count([
+            ("state", "=", "failed"),
+            ("date_start", ">=", week_start),
+        ])
+        success_7d = History.search_count([
+            ("state", "=", "success"),
+            ("date_start", ">=", week_start),
+        ])
+        # Success rate over completed runs only. A row still in 'running'
+        # state has no outcome yet, so it is left out of the denominator;
+        # an empty window yields 0.0 instead of dividing by zero.
+        completed_7d = success_7d + failures_7d
+        success_rate_7d = (
+            success_7d / completed_7d * 100.0 if completed_7d else 0.0
+        )
         return {
             "failures_24h": History.search_count([
                 ("state", "=", "failed"),
                 ("date_start", ">=", now - timedelta(days=1)),
             ]),
-            "failures_7d": History.search_count([
-                ("state", "=", "failed"),
-                ("date_start", ">=", now - timedelta(days=7)),
-            ]),
+            "failures_7d": failures_7d,
             "history_total_7d": History.search_count([
-                ("date_start", ">=", now - timedelta(days=7)),
+                ("date_start", ">=", week_start),
             ]),
+            "success_rate_7d": success_rate_7d,
         }
 
     @api.model
