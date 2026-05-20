@@ -1,163 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo noupdate="0">
-    <!-- Style strings are inlined via Jinja2 line-statement set vars
-         (% set name = value) rather than CSS classes because Gmail /
-         Outlook / mobile clients strip <style> blocks before render.
-         The set vars give us "class-like" reuse while still emitting
-         inline styles. v14 uses Jinja2 SandboxedEnvironment configured
-         with block_start_string="<%" and line_statement_prefix="%";
-         v15+ switched to QWeb. -->
+<!-- TODO: parse error in this file -->
+<!--    &lt;!&ndash; Style strings are inlined via Jinja2 line-statement set vars-->
+<!--         (% set name = value) rather than CSS classes because Gmail /-->
+<!--         Outlook / mobile clients strip <style> blocks before render.-->
+<!--         The set vars give us "class-like" reuse while still emitting-->
+<!--         inline styles. v14 uses Jinja2 SandboxedEnvironment configured-->
+<!--         with block_start_string="<%" and line_statement_prefix="%";-->
+<!--         v15+ switched to QWeb. &ndash;&gt;-->
 
-    <record id="mail_template_cron_failure" model="mail.template">
-        <field name="name">Odoo Health Check: Cron Failure</field>
-        <field name="model_id" ref="model_ir_cron_history"/>
-        <field name="subject">[Odoo Health] Cron failure: ${object.cron_id.name} on ${object.server_name}</field>
-        <field name="email_from">${(object.env.company.email or user.email_formatted)|safe}</field>
-        <field name="body_html" type="html">
-% set accent = '#b00020'
-% set badge_style = 'display:inline-block;padding:4px 12px;background:' + accent + ';color:#fff;font-weight:bold;border-radius:3px;font-size:12px;letter-spacing:0.5px'
-% set button_style = 'display:inline-block;padding:8px 16px;background:' + accent + ';color:#fff;text-decoration:none;border-radius:3px;font-weight:bold'
-% set kv_label = 'padding:4px 12px 4px 0;color:#666'
-% set footer_style = 'margin-top:24px;color:#888;font-size:12px'
-<div style="font-family:Arial,sans-serif;font-size:14px;color:#333;max-width:720px">
-    <div style="${badge_style}">CRITICAL</div>
-    <p style="margin-top:12px">A scheduled action has <strong style="color:${accent}">failed</strong> on server <strong>${object.server_name}</strong>.</p>
-    <table style="border-collapse:collapse;margin:12px 0">
-        <tr><td style="${kv_label}">Scheduled action</td><td><strong>${object.cron_id.name}</strong></td></tr>
-        <tr><td style="${kv_label}">Started</td><td>${object.date_start}</td></tr>
-        <tr><td style="${kv_label}">Ended</td><td>${object.date_end}</td></tr>
-        <tr><td style="${kv_label}">Duration</td><td>${object.duration_sec} s</td></tr>
-        <tr><td style="${kv_label}">Server</td><td>${object.server_name}</td></tr>
-    </table>
-    <p>
-        <a href="${object._action_url()}" style="${button_style}">
-            View in Cron History
-        </a>
-    </p>
-    <details style="margin-top:18px">
-        <summary style="cursor:pointer;color:#666;font-size:13px;padding:6px 0">
-            Show full error traceback
-        </summary>
-        <pre style="background:#f5f5f5;padding:12px;border-left:4px solid ${accent};overflow-x:auto;margin-top:8px;font-size:12px">${object.error_traceback}</pre>
-    </details>
-    <p style="${footer_style}">
-        Sent by <strong>Odoo Health Check</strong>. Manage recipients in Settings -&gt; Health Check.
-    </p>
-</div>
-        </field>
-        <field name="auto_delete" eval="True"/>
-    </record>
+<!--    <record id="mail_template_cron_failure" model="mail.template">-->
+<!--        <field name="name">Odoo Health Check: Cron Failure</field>-->
+<!--        <field name="model_id" ref="model_ir_cron_history"/>-->
+<!--        <field name="subject">[Odoo Health] Cron failure: ${object.cron_id.name} on ${object.server_name}</field>-->
+<!--        <field name="email_from">${(object.env.company.email or user.email_formatted)|safe}</field>-->
+<!--        <field name="body_html" type="html">-->
+<!--% set accent = '#b00020'-->
+<!--% set badge_style = 'display:inline-block;padding:4px 12px;background:' + accent + ';color:#fff;font-weight:bold;border-radius:3px;font-size:12px;letter-spacing:0.5px'-->
+<!--% set button_style = 'display:inline-block;padding:8px 16px;background:' + accent + ';color:#fff;text-decoration:none;border-radius:3px;font-weight:bold'-->
+<!--% set kv_label = 'padding:4px 12px 4px 0;color:#666'-->
+<!--% set footer_style = 'margin-top:24px;color:#888;font-size:12px'-->
+<!--<div style="font-family:Arial,sans-serif;font-size:14px;color:#333;max-width:720px">-->
+<!--    <div style="${badge_style}">CRITICAL</div>-->
+<!--    <p style="margin-top:12px">A scheduled action has <strong style="color:${accent}">failed</strong> on server <strong>${object.server_name}</strong>.</p>-->
+<!--    <table style="border-collapse:collapse;margin:12px 0">-->
+<!--        <tr><td style="${kv_label}">Scheduled action</td><td><strong>${object.cron_id.name}</strong></td></tr>-->
+<!--        <tr><td style="${kv_label}">Started</td><td>${object.date_start}</td></tr>-->
+<!--        <tr><td style="${kv_label}">Ended</td><td>${object.date_end}</td></tr>-->
+<!--        <tr><td style="${kv_label}">Duration</td><td>${object.duration_sec} s</td></tr>-->
+<!--        <tr><td style="${kv_label}">Server</td><td>${object.server_name}</td></tr>-->
+<!--    </table>-->
+<!--    <p>-->
+<!--        <a href="${object._action_url()}" style="${button_style}">-->
+<!--            View in Cron History-->
+<!--        </a>-->
+<!--    </p>-->
+<!--    <details style="margin-top:18px">-->
+<!--        <summary style="cursor:pointer;color:#666;font-size:13px;padding:6px 0">-->
+<!--            Show full error traceback-->
+<!--        </summary>-->
+<!--        <pre style="background:#f5f5f5;padding:12px;border-left:4px solid ${accent};overflow-x:auto;margin-top:8px;font-size:12px">${object.error_traceback}</pre>-->
+<!--    </details>-->
+<!--    <p style="${footer_style}">-->
+<!--        Sent by <strong>Odoo Health Check</strong>. Manage recipients in Settings -&gt; Health Check.-->
+<!--    </p>-->
+<!--</div>-->
+<!--        </field>-->
+<!--        <field name="auto_delete" eval="True"/>-->
+<!--    </record>-->
 
-    <record id="mail_template_disk_alert" model="mail.template">
-        <field name="name">Odoo Health Check: Disk Alert</field>
-        <field name="model_id" ref="model_health_check_result"/>
-        <field name="subject">[Odoo Health] Disk ${object.status}: ${object.mount_path} at ${'%.1f' % (object.used_pct or 0)}% used</field>
-        <field name="email_from">${(object.env.company.email or user.email_formatted)|safe}</field>
-        <field name="body_html" type="html">
-% set accent = '#b00020' if object.status == 'critical' else '#b08000'
-% set badge_text = object.status.upper() if object.status else 'WARNING'
-% set badge_style = 'display:inline-block;padding:4px 12px;background:' + accent + ';color:#fff;font-weight:bold;border-radius:3px;font-size:12px;letter-spacing:0.5px'
-% set button_style = 'display:inline-block;padding:8px 16px;background:' + accent + ';color:#fff;text-decoration:none;border-radius:3px;font-weight:bold'
-% set kv_label = 'padding:4px 12px 4px 0;color:#666'
-% set footer_style = 'margin-top:24px;color:#888;font-size:12px'
-<div style="font-family:Arial,sans-serif;font-size:14px;color:#333;max-width:720px">
-    <div style="${badge_style}">${badge_text}</div>
-    <p style="margin-top:12px">Disk usage on <strong>${object.mount_path}</strong> has reached
-       <strong>${object.status}</strong>:
-       <strong>${'%.1f' % (object.used_pct or 0)}</strong>% used.</p>
-    <table style="border-collapse:collapse;margin:12px 0">
-        <tr><td style="${kv_label}">Check</td><td>${object.check_type}</td></tr>
-        <tr><td style="${kv_label}">Mount</td><td><strong>${object.mount_path}</strong></td></tr>
-        <tr><td style="${kv_label}">Status</td><td>${object.status}</td></tr>
-        <tr><td style="${kv_label}">Used</td><td>${'%.2f' % (object.used_pct or 0)}%</td></tr>
-        <tr><td style="${kv_label}">Total</td><td>${'%.2f' % ((object.total_bytes or 0) / (1024.0 ** 3))} GB</td></tr>
-        <tr><td style="${kv_label}">Free</td><td>${'%.2f' % ((object.free_bytes or 0) / (1024.0 ** 3))} GB</td></tr>
-        <tr><td style="${kv_label}">Time</td><td>${object.date}</td></tr>
-    </table>
-    <p>
-        <a href="${object._action_url()}" style="${button_style}">
-            View in Disk Checks
-        </a>
-    </p>
-    <p style="${footer_style}">
-        One alert per worsening transition. Manage thresholds and recipients in Settings -&gt; Health Check.
-    </p>
-</div>
-        </field>
-        <field name="auto_delete" eval="True"/>
-    </record>
+<!--    <record id="mail_template_disk_alert" model="mail.template">-->
+<!--        <field name="name">Odoo Health Check: Disk Alert</field>-->
+<!--        <field name="model_id" ref="model_health_check_result"/>-->
+<!--        <field name="subject">[Odoo Health] Disk ${object.status}: ${object.mount_path} at ${'%.1f' % (object.used_pct or 0)}% used</field>-->
+<!--        <field name="email_from">${(object.env.company.email or user.email_formatted)|safe}</field>-->
+<!--        <field name="body_html" type="html">-->
+<!--% set accent = '#b00020' if object.status == 'critical' else '#b08000'-->
+<!--% set badge_text = object.status.upper() if object.status else 'WARNING'-->
+<!--% set badge_style = 'display:inline-block;padding:4px 12px;background:' + accent + ';color:#fff;font-weight:bold;border-radius:3px;font-size:12px;letter-spacing:0.5px'-->
+<!--% set button_style = 'display:inline-block;padding:8px 16px;background:' + accent + ';color:#fff;text-decoration:none;border-radius:3px;font-weight:bold'-->
+<!--% set kv_label = 'padding:4px 12px 4px 0;color:#666'-->
+<!--% set footer_style = 'margin-top:24px;color:#888;font-size:12px'-->
+<!--<div style="font-family:Arial,sans-serif;font-size:14px;color:#333;max-width:720px">-->
+<!--    <div style="${badge_style}">${badge_text}</div>-->
+<!--    <p style="margin-top:12px">Disk usage on <strong>${object.mount_path}</strong> has reached-->
+<!--       <strong>${object.status}</strong>:-->
+<!--       <strong>${'%.1f' % (object.used_pct or 0)}</strong>% used.</p>-->
+<!--    <table style="border-collapse:collapse;margin:12px 0">-->
+<!--        <tr><td style="${kv_label}">Check</td><td>${object.check_type}</td></tr>-->
+<!--        <tr><td style="${kv_label}">Mount</td><td><strong>${object.mount_path}</strong></td></tr>-->
+<!--        <tr><td style="${kv_label}">Status</td><td>${object.status}</td></tr>-->
+<!--        <tr><td style="${kv_label}">Used</td><td>${'%.2f' % (object.used_pct or 0)}%</td></tr>-->
+<!--        <tr><td style="${kv_label}">Total</td><td>${'%.2f' % ((object.total_bytes or 0) / (1024.0 ** 3))} GB</td></tr>-->
+<!--        <tr><td style="${kv_label}">Free</td><td>${'%.2f' % ((object.free_bytes or 0) / (1024.0 ** 3))} GB</td></tr>-->
+<!--        <tr><td style="${kv_label}">Time</td><td>${object.date}</td></tr>-->
+<!--    </table>-->
+<!--    <p>-->
+<!--        <a href="${object._action_url()}" style="${button_style}">-->
+<!--            View in Disk Checks-->
+<!--        </a>-->
+<!--    </p>-->
+<!--    <p style="${footer_style}">-->
+<!--        One alert per worsening transition. Manage thresholds and recipients in Settings -&gt; Health Check.-->
+<!--    </p>-->
+<!--</div>-->
+<!--        </field>-->
+<!--        <field name="auto_delete" eval="True"/>-->
+<!--    </record>-->
 
-    <record id="mail_template_pg_monthly" model="mail.template">
-        <field name="name">Odoo Health Check: Monthly PG Report</field>
-        <field name="model_id" ref="model_health_check_result"/>
-        <field name="subject">[Odoo Health] PG monthly report: ${object.env.cr.dbname} (${object.date and object.date.strftime('%Y-%m') or ''})</field>
-        <field name="email_from">${(object.env.company.email or user.email_formatted)|safe}</field>
-        <field name="body_html" type="html">
-% set accent = '#1f7a8c'
-% set button_style = 'display:inline-block;padding:8px 16px;background:' + accent + ';color:#fff;text-decoration:none;border-radius:3px;font-weight:bold'
-% set th_style = 'text-align:left;padding:6px 12px;border-bottom:1px solid #ddd'
-% set th_right = 'text-align:right;padding:6px 12px;border-bottom:1px solid #ddd'
-% set td_style = 'padding:4px 12px;border-bottom:1px solid #eee'
-% set td_right = 'padding:4px 12px;text-align:right;border-bottom:1px solid #eee'
-% set footer_style = 'margin-top:24px;color:#888;font-size:12px'
-% set data = object._get_parsed_details()
-<div style="font-family:Arial,sans-serif;font-size:14px;color:#333;max-width:720px">
-    <p>Monthly PostgreSQL growth report for database
-       <strong>${data.get('db_name', '?')}</strong>.</p>
-    <p>
-        Total DB size: <strong>${object._human_bytes(data.get('total_db_bytes', 0))}</strong>
-        % if data.get('total_db_bytes_delta') is not none:
-            (${object._human_delta_bytes(data.get('total_db_bytes_delta'))} vs previous report)
-        % endif
-    </p>
-    <h3 style="margin-top:18px">Top tables</h3>
-    <table style="border-collapse:collapse;font-size:13px">
-        <thead>
-            <tr style="background:#f5f5f5">
-                <th style="${th_style}">Table</th>
-                <th style="${th_right}">Total size</th>
-                <th style="${th_right}">Δ Size</th>
-                <th style="${th_right}">Rows (est.)</th>
-                <th style="${th_right}">Δ Rows</th>
-            </tr>
-        </thead>
-        <tbody>
-            % for t in data.get('tables', []):
-                <tr>
-                    <td style="${td_style}">${t.get('name')}</td>
-                    <td style="${td_right}">${object._human_bytes(t.get('total_bytes', 0))}</td>
-                    <td style="${td_right}">
-                        % if t.get('total_bytes_delta') is none:
-                            new
-                        % else:
-                            ${object._human_delta_bytes(t.get('total_bytes_delta'))}
-                        % endif
-                    </td>
-                    <td style="${td_right}">${t.get('row_estimate', 0)}</td>
-                    <td style="${td_right}">
-                        % if t.get('row_estimate_delta') is none:
-                            new
-                        % elif t.get('row_estimate_delta') &gt; 0:
-                            +${t.get('row_estimate_delta')}
-                        % else:
-                            ${t.get('row_estimate_delta')}
-                        % endif
-                    </td>
-                </tr>
-            % endfor
-        </tbody>
-    </table>
-    <p style="margin-top:18px">
-        <a href="${object._action_url()}" style="${button_style}">
-            View in PG Reports
-        </a>
-    </p>
-    <p style="${footer_style}">
-        Sent monthly by <strong>Odoo Health Check</strong>. Row counts are PostgreSQL estimates from `pg_class.reltuples` (last ANALYZE), not exact COUNT(*). Manage recipients in Settings -&gt; Health Check.
-    </p>
-</div>
-        </field>
-        <field name="auto_delete" eval="True"/>
-    </record>
+<!--    <record id="mail_template_pg_monthly" model="mail.template">-->
+<!--        <field name="name">Odoo Health Check: Monthly PG Report</field>-->
+<!--        <field name="model_id" ref="model_health_check_result"/>-->
+<!--        <field name="subject">[Odoo Health] PG monthly report: ${object.env.cr.dbname} (${object.date and object.date.strftime('%Y-%m') or ''})</field>-->
+<!--        <field name="email_from">${(object.env.company.email or user.email_formatted)|safe}</field>-->
+<!--        <field name="body_html" type="html">-->
+<!--% set accent = '#1f7a8c'-->
+<!--% set button_style = 'display:inline-block;padding:8px 16px;background:' + accent + ';color:#fff;text-decoration:none;border-radius:3px;font-weight:bold'-->
+<!--% set th_style = 'text-align:left;padding:6px 12px;border-bottom:1px solid #ddd'-->
+<!--% set th_right = 'text-align:right;padding:6px 12px;border-bottom:1px solid #ddd'-->
+<!--% set td_style = 'padding:4px 12px;border-bottom:1px solid #eee'-->
+<!--% set td_right = 'padding:4px 12px;text-align:right;border-bottom:1px solid #eee'-->
+<!--% set footer_style = 'margin-top:24px;color:#888;font-size:12px'-->
+<!--% set data = object._get_parsed_details()-->
+<!--<div style="font-family:Arial,sans-serif;font-size:14px;color:#333;max-width:720px">-->
+<!--    <p>Monthly PostgreSQL growth report for database-->
+<!--       <strong>${data.get('db_name', '?')}</strong>.</p>-->
+<!--    <p>-->
+<!--        Total DB size: <strong>${object._human_bytes(data.get('total_db_bytes', 0))}</strong>-->
+<!--        % if data.get('total_db_bytes_delta') is not none:-->
+<!--            (${object._human_delta_bytes(data.get('total_db_bytes_delta'))} vs previous report)-->
+<!--        % endif-->
+<!--    </p>-->
+<!--    <h3 style="margin-top:18px">Top tables</h3>-->
+<!--    <table style="border-collapse:collapse;font-size:13px">-->
+<!--        <thead>-->
+<!--            <tr style="background:#f5f5f5">-->
+<!--                <th style="${th_style}">Table</th>-->
+<!--                <th style="${th_right}">Total size</th>-->
+<!--                <th style="${th_right}">Δ Size</th>-->
+<!--                <th style="${th_right}">Rows (est.)</th>-->
+<!--                <th style="${th_right}">Δ Rows</th>-->
+<!--            </tr>-->
+<!--        </thead>-->
+<!--        <tbody>-->
+<!--            % for t in data.get('tables', []):-->
+<!--                <tr>-->
+<!--                    <td style="${td_style}">${t.get('name')}</td>-->
+<!--                    <td style="${td_right}">${object._human_bytes(t.get('total_bytes', 0))}</td>-->
+<!--                    <td style="${td_right}">-->
+<!--                        % if t.get('total_bytes_delta') is none:-->
+<!--                            new-->
+<!--                        % else:-->
+<!--                            ${object._human_delta_bytes(t.get('total_bytes_delta'))}-->
+<!--                        % endif-->
+<!--                    </td>-->
+<!--                    <td style="${td_right}">${t.get('row_estimate', 0)}</td>-->
+<!--                    <td style="${td_right}">-->
+<!--                        % if t.get('row_estimate_delta') is none:-->
+<!--                            new-->
+<!--                        % elif t.get('row_estimate_delta') &gt; 0:-->
+<!--                            +${t.get('row_estimate_delta')}-->
+<!--                        % else:-->
+<!--                            ${t.get('row_estimate_delta')}-->
+<!--                        % endif-->
+<!--                    </td>-->
+<!--                </tr>-->
+<!--            % endfor-->
+<!--        </tbody>-->
+<!--    </table>-->
+<!--    <p style="margin-top:18px">-->
+<!--        <a href="${object._action_url()}" style="${button_style}">-->
+<!--            View in PG Reports-->
+<!--        </a>-->
+<!--    </p>-->
+<!--    <p style="${footer_style}">-->
+<!--        Sent monthly by <strong>Odoo Health Check</strong>. Row counts are PostgreSQL estimates from `pg_class.reltuples` (last ANALYZE), not exact COUNT(*). Manage recipients in Settings -&gt; Health Check.-->
+<!--    </p>-->
+<!--</div>-->
+<!--        </field>-->
+<!--        <field name="auto_delete" eval="True"/>-->
+<!--    </record>-->
 
 </odoo>
