@@ -137,8 +137,8 @@ class TestDiskCheck(OdooHealthTestCommon):
             row = self.Result._sample_disk("disk_root", "/")
         action = self.env.ref("odoo_health_check.health_check_result_action")
         url = row._action_url()
-        self.assertIn("/odoo/action-%d/" % action.id, url)
-        self.assertTrue(url.endswith("/%d" % row.id))
+        self.assertIn(f"/odoo/action-{action.id}/", url)
+        self.assertTrue(url.endswith(f"/{row.id}"))
 
     def test_action_url_for_pg_report_uses_pg_action(self):
         row = self.Result.create({
@@ -149,5 +149,5 @@ class TestDiskCheck(OdooHealthTestCommon):
         pg_action = self.env.ref("odoo_health_check.health_check_pg_report_action")
         disk_action = self.env.ref("odoo_health_check.health_check_result_action")
         url = row._action_url()
-        self.assertIn("/odoo/action-%d/" % pg_action.id, url)
-        self.assertNotIn("/odoo/action-%d/" % disk_action.id, url)
+        self.assertIn(f"/odoo/action-{pg_action.id}/", url)
+        self.assertNotIn(f"/odoo/action-{disk_action.id}/", url)

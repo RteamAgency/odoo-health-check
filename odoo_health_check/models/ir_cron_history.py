@@ -111,4 +111,4 @@ class IrCronHistory(models.Model):
                 "falling back to base URL",
             )
             return base
-        return "%s/odoo/action-%s/%s" % (base, action.id, self.id)
+        return f"{base}/odoo/action-{action.id}/{self.id}"

@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 import psycopg2
-
 from odoo import fields
 from odoo.tests import tagged
 from odoo.tools import mute_logger
@@ -105,5 +104,5 @@ class TestCronHistoryModel(OdooHealthTestCommon):
         hist = self.History.create({"cron_id": cron.id})
         url = hist._action_url()
         action = self.env.ref("odoo_health_check.ir_cron_history_action")
-        self.assertIn("/odoo/action-%d/" % action.id, url)
-        self.assertTrue(url.endswith("/%d" % hist.id))
+        self.assertIn(f"/odoo/action-{action.id}/", url)
+        self.assertTrue(url.endswith(f"/{hist.id}"))
