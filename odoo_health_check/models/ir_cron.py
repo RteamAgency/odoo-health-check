@@ -39,6 +39,8 @@ class IrCron(models.Model):
                 "state": "running",
             }).id
 
+    # TODO: nest cr lock.
+
     def _odoo_health_log_end(self, history_id, state, error_traceback):
         if not history_id:
             return

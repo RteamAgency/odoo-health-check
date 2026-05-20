@@ -5,7 +5,7 @@ from odoo import api, fields, models
 
 from .health_check_result import _human_bytes, _human_delta_bytes
 
-
+# TODO: there is no reason to set readonly=True on computed fields unless they are stored.
 class HealthCheckDashboard(models.Model):
     """Singleton dashboard summarising cron health, disk usage, and the
     latest PostgreSQL growth report.
