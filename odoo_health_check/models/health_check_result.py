@@ -5,7 +5,6 @@ import shutil
 from odoo import api, fields, models
 from odoo.tools import config
 
-
 _logger = logging.getLogger(__name__)
 
 DEFAULT_WARN_PCT = 80.0
@@ -434,4 +433,4 @@ class HealthCheckResult(models.Model):
                 "odoo_health_check: action %s missing, falling back to base URL", xml_id,
             )
             return base
-        return "%s/odoo/action-%s/%s" % (base, action.id, self.id)
+        return f"{base}/odoo/action-{action.id}/{self.id}"
