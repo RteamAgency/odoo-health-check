@@ -13,6 +13,6 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]                # Odoo re-exports
+"__init__.py" = ["F401", "I001"]        # Odoo re-exports; load order is dependency-ordered, not alphabetical
 "odoo_health_check/tests/__init__.py" = ["F401"]
 "odoo_health_check/__manifest__.py" = ["B018"]  # bare dict expression

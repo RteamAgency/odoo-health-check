@@ -39,22 +39,29 @@ class IrCron(models.Model):
                 "state": "running",
             }).id
 
-    # TODO: nest cr lock.
-
     def _odoo_health_log_end(self, history_id, state, error_traceback):
         if not history_id:
             return
+        # Write the history row in its own short-lived cursor so its row
+        # lock is released the moment this block commits. The failure
+        # email is enqueued afterwards in a separate cursor: send_mail
+        # renders the template and creates mail.mail / mail.message rows,
+        # which must not run while we hold the history row lock (no slow
+        # work nested inside the lock). Both cursors stay isolated from
+        # the monitored cron's main transaction on purpose, so the
+        # history write and the alert survive its rollback.
         with self.pool.cursor() as new_cr:
             env = api.Environment(new_cr, SUPERUSER_ID, {})
-            history = env["ir.cron.history"].browse(history_id)
-            history.write({
+            env["ir.cron.history"].browse(history_id).write({
                 "state": state,
                 "date_end": fields.Datetime.now(),
                 "error_traceback": error_traceback,
             })
-            if state == "failed":
+        if state == "failed":
+            with self.pool.cursor() as mail_cr:
+                env = api.Environment(mail_cr, SUPERUSER_ID, {})
+                history = env["ir.cron.history"].browse(history_id)
                 self._odoo_health_send_failure_email(env, history)
-
 
     @staticmethod
     def _odoo_health_send_failure_email(env, history):
