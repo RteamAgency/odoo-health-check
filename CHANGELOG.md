@@ -2,6 +2,23 @@
 
 All notable changes to this module are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Module versioning: `<odoo_major>.0.<major>.<minor>.<patch>`.
 
+## [15.0.1.0.2] - 2026-05-20
+
+Backport of the version-agnostic fixes from the 14.0 review (OHC-14).
+
+* **health.check.dashboard**: dropped redundant `readonly=True` on the
+  computed (`store=False`) fields; computed non-stored fields are
+  read-only by default. Kept on the stored `name` field.
+* **ir.cron._odoo_health_log_end**: write the history row in its own
+  cursor (lock released on commit) and enqueue the failure email in a
+  separate cursor afterwards, so the slow template render / mail.mail
+  creation no longer runs while holding the history row lock. Both
+  cursors stay isolated from the monitored cron's transaction so the
+  history write and the alert survive its rollback.
+* **tests**: `test_failure_email` called `_callback` with two positional
+  args; Odoo 15's signature requires the third (`job_id`). Fixed all
+  four call sites.
+
 ## [15.0.1.0.1] - 2026-05-07
 
 * Fix: `numbercall=-1` added on every cron record. v14-v17 ir.cron has

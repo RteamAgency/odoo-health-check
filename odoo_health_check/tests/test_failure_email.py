@@ -17,7 +17,7 @@ class TestFailureEmail(OdooHealthTestCommon):
         before = Mail.search_count([])
 
         with self.assertRaises(Exception), mute_logger("odoo.addons.base.models.ir_cron"):
-            cron._callback(cron.name, cron.ir_actions_server_id.id)
+            cron._callback(cron.name, cron.ir_actions_server_id.id, cron.id)
 
         self.assertEqual(Mail.search_count([]) - before, 1)
         mail = Mail.search([], order="id desc", limit=1)
@@ -31,7 +31,7 @@ class TestFailureEmail(OdooHealthTestCommon):
         before = Mail.search_count([])
 
         with self.assertRaises(Exception), mute_logger("odoo.addons.base.models.ir_cron"):
-            cron._callback(cron.name, cron.ir_actions_server_id.id)
+            cron._callback(cron.name, cron.ir_actions_server_id.id, cron.id)
 
         self.assertEqual(Mail.search_count([]), before)
 
@@ -41,7 +41,7 @@ class TestFailureEmail(OdooHealthTestCommon):
         Mail = self.env["mail.mail"]
         before = Mail.search_count([])
 
-        cron._callback(cron.name, cron.ir_actions_server_id.id)
+        cron._callback(cron.name, cron.ir_actions_server_id.id, cron.id)
 
         self.assertEqual(Mail.search_count([]), before)
 
@@ -51,7 +51,7 @@ class TestFailureEmail(OdooHealthTestCommon):
         Mail = self.env["mail.mail"]
 
         with self.assertRaises(Exception), mute_logger("odoo.addons.base.models.ir_cron"):
-            cron._callback(cron.name, cron.ir_actions_server_id.id)
+            cron._callback(cron.name, cron.ir_actions_server_id.id, cron.id)
 
         mail = Mail.search([], order="id desc", limit=1)
         self.assertEqual(mail.email_to, "a@x.com,b@y.com")
