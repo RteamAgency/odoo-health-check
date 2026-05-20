@@ -2,6 +2,20 @@
 
 All notable changes to this module are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Module versioning: `<odoo_major>.0.<major>.<minor>.<patch>`.
 
+## [19.0.1.0.1] - 2026-05-20
+
+Backport of the version-agnostic fixes from the 14.0 review (OHC-14).
+
+* **health.check.dashboard**: dropped redundant `readonly=True` on the
+  computed (`store=False`) fields; computed non-stored fields are
+  read-only by default. Kept on the stored `name` field.
+* **ir.cron._odoo_health_log_end**: write the history row in its own
+  cursor (lock released on commit) and enqueue the failure email in a
+  separate cursor afterwards, so the slow template render / mail.mail
+  creation no longer runs while holding the history row lock. Both
+  cursors stay isolated from the monitored cron's transaction so the
+  history write and the alert survive its rollback.
+
 ## [19.0.1.0.0] - 2026-04-30
 
 Initial public release for Odoo 19. Feature parity with the v18 listing
