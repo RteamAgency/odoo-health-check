@@ -1,7 +1,9 @@
 import logging
 import traceback
+from contextlib import contextmanager
 
 from odoo import SUPERUSER_ID, api, fields, models
+from odoo.tools import config
 
 _logger = logging.getLogger(__name__)
 
@@ -9,18 +11,55 @@ _logger = logging.getLogger(__name__)
 class IrCron(models.Model):
     _inherit = "ir.cron"
 
+    @contextmanager
+    def _odoo_health_env(self):
+        """Yield an Environment for writing the cron history + failure alert.
+
+        Production: an INDEPENDENT cursor (`self.pool.cursor()`) so the history
+        row and the alert survive the monitored cron's own rollback.
+        Tests (`config['test_enable']`): ride the test cursor (an independent
+        cursor cannot be committed/rolled back inside a TransactionCase).
+        """
+        if config["test_enable"]:
+            yield self.env
+        else:
+            with self.pool.cursor() as new_cr:
+                yield api.Environment(new_cr, SUPERUSER_ID, {})
+
     def _callback(self, cron_name, server_action_id, job_id):
         cron_id = self.id or job_id
         history_id = self._odoo_health_log_start(cron_id)
-        try:
-            result = super()._callback(cron_name, server_action_id, job_id)
-        except Exception:
-            self._odoo_health_log_end(history_id, "failed", traceback.format_exc())
-            raise
-        self._odoo_health_log_end(history_id, "success", None)
+        # On Odoo 14-17 base `_callback` SWALLOWS a failing action: it calls
+        # `_handle_callback_exception` and does NOT re-raise. So we cannot detect
+        # failure by wrapping super() in try/except (the except never fires and we
+        # would wrongly log "success"). Instead the failure is recorded in our
+        # `_handle_callback_exception` override below; a shared mutable marker
+        # passed through context tells us here whether that happened.
+        marker = {"failed": False, "history_id": history_id}
+        cron = self.with_context(_odoo_health_marker=marker)
+        result = super(IrCron, cron)._callback(cron_name, server_action_id, job_id)
+        if not marker["failed"]:
+            self._odoo_health_log_end(history_id, "success", None)
         return result
 
+    def _handle_callback_exception(self, cron_name, server_action_id, job_id, job_exception):
+        # Called by base `_callback` when the scheduled action raised, BEFORE base
+        # rolls back. Record the failure on an isolated cursor (prod) so it survives
+        # that rollback, and flag the marker so `_callback` does not also log success.
+        marker = self.env.context.get("_odoo_health_marker")
+        if marker and marker.get("history_id"):
+            marker["failed"] = True
+            tb = "".join(traceback.format_exception(
+                type(job_exception), job_exception, job_exception.__traceback__,
+            ))
+            self._odoo_health_log_end(marker["history_id"], "failed", tb)
+        return super()._handle_callback_exception(
+            cron_name, server_action_id, job_id, job_exception,
+        )
+
     def method_direct_trigger(self):
+        # Manual "Run" runs the action directly (not via _callback) and re-raises
+        # on every version, so plain try/except is correct here.
         for cron in self:
             history_id = cron._odoo_health_log_start(cron.id)
             try:
@@ -32,8 +71,7 @@ class IrCron(models.Model):
         return True
 
     def _odoo_health_log_start(self, cron_id):
-        with self.pool.cursor() as new_cr:
-            env = api.Environment(new_cr, SUPERUSER_ID, {})
+        with self._odoo_health_env() as env:
             return env["ir.cron.history"].create({
                 "cron_id": cron_id,
                 "state": "running",
@@ -42,24 +80,18 @@ class IrCron(models.Model):
     def _odoo_health_log_end(self, history_id, state, error_traceback):
         if not history_id:
             return
-        # Write the history row in its own short-lived cursor so its row
-        # lock is released the moment this block commits. The failure
-        # email is enqueued afterwards in a separate cursor: send_mail
-        # renders the template and creates mail.mail / mail.message rows,
-        # which must not run while we hold the history row lock (no slow
-        # work nested inside the lock). Both cursors stay isolated from
-        # the monitored cron's main transaction on purpose, so the
-        # history write and the alert survive its rollback.
-        with self.pool.cursor() as new_cr:
-            env = api.Environment(new_cr, SUPERUSER_ID, {})
+        # History write in its own short-lived cursor (releases the row lock on
+        # commit); the failure email is enqueued in a SEPARATE cursor afterwards
+        # (no slow work inside the lock). Both isolated from the monitored cron in
+        # prod; both ride the test cursor under --test-enable (see _odoo_health_env).
+        with self._odoo_health_env() as env:
             env["ir.cron.history"].browse(history_id).write({
                 "state": state,
                 "date_end": fields.Datetime.now(),
                 "error_traceback": error_traceback,
             })
         if state == "failed":
-            with self.pool.cursor() as mail_cr:
-                env = api.Environment(mail_cr, SUPERUSER_ID, {})
+            with self._odoo_health_env() as env:
                 history = env["ir.cron.history"].browse(history_id)
                 self._odoo_health_send_failure_email(env, history)
 
