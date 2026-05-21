@@ -2,6 +2,26 @@
 
 All notable changes to this module are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Module versioning: `<odoo_major>.0.<major>.<minor>.<patch>`.
 
+## [16.0.1.0.3] - 2026-05-21
+
+* **Test suite green** (was 13 problem tests of 82). The cron history/alert tests
+  drove failing/long crons through base `ir.cron._callback`, which rolls back the
+  cursor on failure - illegal on the test cursor (savepoint corruption). Rewrote
+  those tests to exercise the logging helpers directly, and made the module
+  test-aware: `_odoo_health_env` uses an isolated cursor in production (history +
+  alert survive the monitored cron's rollback) and the test cursor under
+  `--test-enable`. Removed the broken `registry.cursor` monkeypatch from the test base.
+* **Scheduled-cron failure detection fixed (Odoo 14-17)**: on these majors base
+  `_callback` SWALLOWS a failing scheduled action (it calls
+  `_handle_callback_exception` and does not re-raise), so the previous
+  try/except-around-super recorded every run as "success". Failures are now
+  recorded by overriding `_handle_callback_exception`. Manual "Run" already worked
+  (it runs the action directly and re-raises).
+* **ir.cron.history retention cleanup**: a non-numeric `retention_days` raised
+  `UserError` and a non-positive value still purged rows. A GC cron must not break
+  on bad config: invalid values are now skipped and `<= 0` disables cleanup.
+
+
 ## [16.0.1.0.2] - 2026-05-20
 
 Backport of the version-agnostic fixes from the 14.0 review (OHC-14).
