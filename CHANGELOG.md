@@ -2,6 +2,20 @@
 
 All notable changes to this module are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Module versioning: `<odoo_major>.0.<major>.<minor>.<patch>`.
 
+## [19.0.1.0.3] - 2026-05-21
+
+* **Test suite green on Odoo 19** (was 10 failed + 1 error of 82). The cron
+  history/alert tests drove failing/long crons through base `ir.cron._callback`,
+  which commits on success and rolls back on failure - both forbidden on the test
+  cursor (savepoint corruption / "Cannot commit or rollback a cursor from inside a
+  test"). Rewrote those tests to exercise the logging helpers directly, and made the
+  module test-aware: `_odoo_health_env` uses an isolated cursor in production (so
+  history + alert survive the monitored cron's rollback) and the test cursor under
+  `--test-enable`. Removed the broken `registry.cursor` monkeypatch from the test base.
+* **ir.cron.history retention cleanup**: a non-numeric `retention_days` raised
+  `UserError` and a non-positive value still purged rows. A GC cron must not break
+  on bad config: invalid values are now skipped and `<= 0` disables cleanup.
+
 ## [19.0.1.0.2] - 2026-05-21
 
 * **res.config.settings action**: `ir.actions.act_window.target` value

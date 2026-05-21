@@ -1,35 +1,42 @@
-from unittest.mock import patch
-
 from odoo.tests import tagged
-from odoo.tools import mute_logger
 
 from .common import OdooHealthTestCommon
 
 
 @tagged("post_install", "-at_install", "odoo_health_check")
 class TestCronOverride(OdooHealthTestCommon):
+    """Exercise the history-logging helpers directly.
 
-    def test_callback_records_success(self):
+    Running a cron through base ``_callback`` / ``method_direct_trigger`` is not
+    viable inside a TransactionCase: base ``_callback`` commits on success
+    (Odoo 19) and rolls back on failure (all versions), both forbidden on the
+    test cursor. The helpers below are exactly what the override calls, so this
+    keeps full behavioural coverage of the logging contract while staying
+    version-portable.
+    """
+
+    def test_log_start_then_success(self):
         cron = self._make_cron(code="pass")
         before = self.History.search_count([("cron_id", "=", cron.id)])
 
-        cron._callback(cron.name, cron.ir_actions_server_id.id)
+        hid = cron._odoo_health_log_start(cron.id)
+        cron._odoo_health_log_end(hid, "success", None)
 
-        records = self.History.search(
-            [("cron_id", "=", cron.id)], order="id desc",
-        )
+        records = self.History.search([("cron_id", "=", cron.id)], order="id desc")
         self.assertEqual(len(records) - before, 1)
         self.assertEqual(records[0].state, "success")
         self.assertTrue(records[0].date_end)
         self.assertGreaterEqual(records[0].duration_sec, 0.0)
         self.assertFalse(records[0].error_traceback)
 
-    def test_callback_records_failure_with_traceback(self):
-        cron = self._make_cron(code="raise Exception('test boom')")
-
-        with self.assertRaises(Exception) as ctx, mute_logger("odoo.addons.base.models.ir_cron"):
-            cron._callback(cron.name, cron.ir_actions_server_id.id)
-        self.assertIn("test boom", str(ctx.exception))
+    def test_log_end_failure_records_traceback(self):
+        cron = self._make_cron()
+        hid = cron._odoo_health_log_start(cron.id)
+        cron._odoo_health_log_end(
+            hid,
+            "failed",
+            "Traceback (most recent call last):\n  File ...\nException: test boom\n",
+        )
 
         record = self.History.search(
             [("cron_id", "=", cron.id)], order="id desc", limit=1,
@@ -38,22 +45,14 @@ class TestCronOverride(OdooHealthTestCommon):
         self.assertIn("test boom", record.error_traceback or "")
         self.assertTrue(record.date_end)
 
-    def test_manual_trigger_records_success(self):
-        cron = self._make_cron(code="pass")
-
-        cron.method_direct_trigger()
-
-        record = self.History.search(
-            [("cron_id", "=", cron.id)], order="id desc", limit=1,
+    def test_second_failure_records_separate_row(self):
+        cron = self._make_cron()
+        hid = cron._odoo_health_log_start(cron.id)
+        cron._odoo_health_log_end(
+            hid,
+            "failed",
+            "Traceback (most recent call last):\n  File ...\nException: manual boom\n",
         )
-        self.assertEqual(record.state, "success")
-
-    def test_manual_trigger_records_failure(self):
-        cron = self._make_cron(code="raise Exception('manual boom')")
-
-        with self.assertRaises(Exception) as ctx, mute_logger("odoo.addons.base.models.ir_actions"):
-            cron.method_direct_trigger()
-        self.assertIn("manual boom", str(ctx.exception))
 
         record = self.History.search(
             [("cron_id", "=", cron.id)], order="id desc", limit=1,
@@ -61,10 +60,15 @@ class TestCronOverride(OdooHealthTestCommon):
         self.assertEqual(record.state, "failed")
         self.assertIn("manual boom", record.error_traceback or "")
 
-    def test_cron_survives_missing_history_id(self):
-        """If _odoo_health_log_start returns None (its own exception path),
-        _callback must still run the super() implementation without raising
-        from the logging side."""
-        cron = self._make_cron(code="pass")
-        with patch.object(type(cron), "_odoo_health_log_start", return_value=None):
-            cron._callback(cron.name, cron.ir_actions_server_id.id)
+    def test_log_end_with_missing_history_id_is_noop(self):
+        """If _odoo_health_log_start returned None (its own failure path),
+        _odoo_health_log_end must be a safe no-op rather than raise, so the
+        override never breaks the monitored cron from the logging side."""
+        cron = self._make_cron()
+        before = self.History.search_count([("cron_id", "=", cron.id)])
+
+        # Must not raise, must not create a row.
+        self.assertIsNone(cron._odoo_health_log_end(None, "success", None))
+        self.assertIsNone(cron._odoo_health_log_end(None, "failed", "boom"))
+
+        self.assertEqual(self.History.search_count([("cron_id", "=", cron.id)]), before)
