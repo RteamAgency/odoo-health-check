@@ -145,7 +145,7 @@ class TestDashboard(OdooHealthTestCommon):
     def test_singleton_record_exposes_fresh_computed_snapshot(self):
         self._seed_disk("disk_root", "warn", used_pct=85.0)
         rec = self.Dashboard._get_singleton()
-        rec.invalidate_recordset()
+        rec.invalidate_cache()
         self.assertEqual(rec.disk_root_status, "warn")
         self.assertEqual(rec.disk_root_used_pct, 85.0)
 
