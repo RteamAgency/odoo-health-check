@@ -2,6 +2,15 @@
 
 All notable changes to this module are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Module versioning: `<odoo_major>.0.<major>.<minor>.<patch>`.
 
+## [19.0.1.0.2] - 2026-05-21
+
+* **res.config.settings action**: `ir.actions.act_window.target` value
+  `inline` was removed in Odoo 19, which made the module fail to install
+  (`ValueError: Wrong value for ir.actions.act_window.target: 'inline'`).
+  Switched the Health Check settings shortcut action to `target="current"`.
+  The 19.0 branch now installs cleanly on Odoo 19 (verified on `odoo:19`
+  docker `--test-enable` + XML-RPC install smoke).
+
 ## [19.0.1.0.1] - 2026-05-20
 
 Backport of the version-agnostic fixes from the 14.0 review (OHC-14).
