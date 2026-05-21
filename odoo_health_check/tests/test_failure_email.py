@@ -1,5 +1,4 @@
 from odoo.tests import tagged
-from odoo.tools import mute_logger
 
 from .common import OdooHealthTestCommon
 
@@ -12,12 +11,12 @@ class TestFailureEmail(OdooHealthTestCommon):
 
     def test_failed_cron_with_recipients_enqueues_mail(self):
         self._set_notify("ops-test@example.com")
-        cron = self._make_cron(code="raise ValueError('email test boom')")
+        cron = self._make_cron()
         Mail = self.env["mail.mail"]
         before = Mail.search_count([])
 
-        with self.assertRaises(ValueError), mute_logger("odoo.addons.base.models.ir_cron"):
-            cron._callback(cron.name, cron.ir_actions_server_id.id)
+        hid = cron._odoo_health_log_start(cron.id)
+        cron._odoo_health_log_end(hid, "failed", "ValueError: email test boom")
 
         self.assertEqual(Mail.search_count([]) - before, 1)
         mail = Mail.search([], order="id desc", limit=1)
@@ -26,12 +25,12 @@ class TestFailureEmail(OdooHealthTestCommon):
 
     def test_failed_cron_with_empty_recipients_does_not_enqueue(self):
         self._set_notify("")
-        cron = self._make_cron(code="raise ValueError('silent failure')")
+        cron = self._make_cron()
         Mail = self.env["mail.mail"]
         before = Mail.search_count([])
 
-        with self.assertRaises(ValueError), mute_logger("odoo.addons.base.models.ir_cron"):
-            cron._callback(cron.name, cron.ir_actions_server_id.id)
+        hid = cron._odoo_health_log_start(cron.id)
+        cron._odoo_health_log_end(hid, "failed", "ValueError: silent failure")
 
         self.assertEqual(Mail.search_count([]), before)
 
@@ -47,11 +46,11 @@ class TestFailureEmail(OdooHealthTestCommon):
 
     def test_multiple_recipients_comma_separated(self):
         self._set_notify(" a@x.com , b@y.com ,  ")
-        cron = self._make_cron(code="raise ValueError('multi recipient')")
+        cron = self._make_cron()
         Mail = self.env["mail.mail"]
 
-        with self.assertRaises(ValueError), mute_logger("odoo.addons.base.models.ir_cron"):
-            cron._callback(cron.name, cron.ir_actions_server_id.id)
+        hid = cron._odoo_health_log_start(cron.id)
+        cron._odoo_health_log_end(hid, "failed", "ValueError: multi recipient")
 
         mail = Mail.search([], order="id desc", limit=1)
         self.assertEqual(mail.email_to, "a@x.com,b@y.com")
