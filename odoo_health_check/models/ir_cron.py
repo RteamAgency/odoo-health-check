@@ -1,7 +1,7 @@
 import logging
 import traceback
 
-from odoo import SUPERUSER_ID, api, fields, models
+from odoo import SUPERUSER_ID, api, fields, models, registry
 
 _logger = logging.getLogger(__name__)
 
@@ -32,47 +32,42 @@ class IrCron(models.Model):
         return True
 
     def _odoo_health_log_start(self, cron_id):
-        with self.pool.cursor() as new_cr:
-            env = api.Environment(new_cr, SUPERUSER_ID, {})
-            return env["ir.cron.history"].create({
+        with registry(self.env.cr.dbname).cursor() as new_cr:
+            new_env = api.Environment(new_cr, self.env.uid, {})
+            history_id = new_env["ir.cron.history"].create({
                 "cron_id": cron_id,
                 "state": "running",
             }).id
+            new_cr.commit()
+            return history_id
 
     def _odoo_health_log_end(self, history_id, state, error_traceback):
         if not history_id:
             return
-        # Write the history row in its own short-lived cursor so its row
-        # lock is released the moment this block commits. The failure
-        # email is enqueued afterwards in a separate cursor: send_mail
-        # renders the template and creates mail.mail / mail.message rows,
-        # which must not run while we hold the history row lock (no slow
-        # work nested inside the lock). Both cursors stay isolated from
-        # the monitored cron's main transaction on purpose, so the
-        # history write and the alert survive its rollback.
-        with self.pool.cursor() as new_cr:
-            env = api.Environment(new_cr, SUPERUSER_ID, {})
-            env["ir.cron.history"].browse(history_id).write({
-                "state": state,
-                "date_end": fields.Datetime.now(),
-                "error_traceback": error_traceback,
-            })
-        if state == "failed":
-            with self.pool.cursor() as mail_cr:
-                env = api.Environment(mail_cr, SUPERUSER_ID, {})
-                history = env["ir.cron.history"].browse(history_id)
-                self._odoo_health_send_failure_email(env, history)
 
-    @staticmethod
-    def _odoo_health_send_failure_email(env, history):
-        emails_param = (env["ir.config_parameter"].sudo()
+        db = self.env.cr.dbname
+        if state == "failed":
+            self._odoo_health_send_failure_email(history_id)
+
+        with registry(db).cursor() as cr:
+            cr.execute("""
+                        UPDATE ir_cron_history
+                           SET state = %s,
+                               date_end = NOW(),
+                               error_traceback = %s
+                         WHERE id = %s
+                    """, (state, error_traceback, history_id))
+            cr.commit()
+
+    def _odoo_health_send_failure_email(self, history_id):
+        emails_param = (self.env["ir.config_parameter"].sudo()
                         .get_param("odoo_health_check.notify_emails") or "").strip()
         if not emails_param:
             return
         recipients = [e.strip() for e in emails_param.split(",") if e.strip()]
         if not recipients:
             return
-        template = env.ref(
+        template = self.env.ref(
             "odoo_health_check.mail_template_cron_failure",
             raise_if_not_found=False,
         )
@@ -83,12 +78,13 @@ class IrCron(models.Model):
             return
         try:
             template.send_mail(
-                history.id,
-                force_send=False,
+                history_id,
+                force_send=True,
                 email_values={"email_to": ",".join(recipients)},
+                notif_layout='mail.mail_notification_light',
             )
         except Exception:
             _logger.exception(
                 "odoo_health_check: failed to enqueue cron failure email for history_id=%s",
-                history.id,
+                history_id,
             )
