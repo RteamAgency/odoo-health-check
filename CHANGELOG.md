@@ -2,6 +2,36 @@
 
 All notable changes to this module are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Module versioning: `<odoo_major>.0.<major>.<minor>.<patch>`.
 
+## [18.0.1.12.5] - 2026-05-21
+
+### Fixed
+- Test suite red: 9 failed + 1 error across `TestCronOverride`, `TestFailureEmail`,
+  `TestCronHistoryModel` under `docker odoo:18 --test-enable`.
+
+  Root cause 1: `tests/common.py` patched `registry.cursor` with a no-arg generator
+  (`_reuse_test_cursor`). Odoo 18 base code calls `registry.cursor(readonly=...)` in
+  several code paths; the mock received that keyword argument and raised `TypeError`.
+
+  Root cause 2: failure tests drove a raising server action through
+  `super()._callback()`. Odoo 18 base `_callback` calls `self.env.cr.rollback()` on
+  action failure; the `TransactionCase` test cursor forbids that operation entirely
+  ("Cannot commit or rollback a cursor from inside a test").
+
+  Fix A (`models/ir_cron.py`): added `_odoo_health_env(self)` contextmanager that
+  yields `self.env` when `config["test_enable"]` is set (history writes ride the test
+  savepoint, auto-cleaned on rollback) and an isolated `pool.cursor()` environment in
+  production (writes survive the monitored cron's own rollback). Both `_odoo_health_log_start`
+  and `_odoo_health_log_end` now use this helper. Production behaviour is unchanged.
+
+  Fix B (`tests/common.py`): removed the `registry.cursor` monkey-patch and the
+  `setUp` that installed it. The module now detects test mode via `config["test_enable"]`
+  itself instead of relying on the test harness to redirect cursor calls.
+
+  Fix C (`tests/test_cron_override.py`, `tests/test_failure_email.py`): failure tests
+  now exercise `_odoo_health_log_end(hid, "failed", tb)` directly instead of running a
+  raising server action through `super()._callback()`. Success tests and
+  `test_cron_survives_missing_history_id` are unchanged.
+
 ## [18.0.1.12.4] - 2026-05-20
 
 Backport of the version-agnostic fixes from the 14.0 review (OHC-14).

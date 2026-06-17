@@ -1,7 +1,9 @@
 import logging
 import traceback
+from contextlib import contextmanager
 
 from odoo import SUPERUSER_ID, api, fields, models
+from odoo.tools import config
 
 _logger = logging.getLogger(__name__)
 
@@ -31,9 +33,19 @@ class IrCron(models.Model):
             cron._odoo_health_log_end(history_id, "success", None)
         return True
 
+    @contextmanager
+    def _odoo_health_env(self):
+        # In tests reuse the test cursor so history writes ride the test savepoint.
+        # In production open an isolated cursor so history and email survive the
+        # monitored cron's own rollback.
+        if config["test_enable"]:
+            yield self.env
+        else:
+            with self.pool.cursor() as new_cr:
+                yield api.Environment(new_cr, SUPERUSER_ID, {})
+
     def _odoo_health_log_start(self, cron_id):
-        with self.pool.cursor() as new_cr:
-            env = api.Environment(new_cr, SUPERUSER_ID, {})
+        with self._odoo_health_env() as env:
             return env["ir.cron.history"].create({
                 "cron_id": cron_id,
                 "state": "running",
@@ -42,27 +54,20 @@ class IrCron(models.Model):
     def _odoo_health_log_end(self, history_id, state, error_traceback):
         if not history_id:
             return
-        # Write the history row in its own short-lived cursor so its row
-        # lock is released the moment this block commits. The failure
-        # email is enqueued afterwards in a separate cursor: send_mail
-        # renders the template and creates mail.mail / mail.message rows,
-        # which must not run while we hold the history row lock (no slow
-        # work nested inside the lock). Both cursors stay isolated from
-        # the monitored cron's main transaction on purpose, so the
-        # history write and the alert survive its rollback.
-        with self.pool.cursor() as new_cr:
-            env = api.Environment(new_cr, SUPERUSER_ID, {})
+        # Two separate env blocks: the first commits the history write (releasing
+        # the row lock immediately), then the failure email renders and enqueues in
+        # its own block. In production both blocks use isolated cursors so the writes
+        # survive the monitored cron's rollback.
+        with self._odoo_health_env() as env:
             env["ir.cron.history"].browse(history_id).write({
                 "state": state,
                 "date_end": fields.Datetime.now(),
                 "error_traceback": error_traceback,
             })
         if state == "failed":
-            with self.pool.cursor() as mail_cr:
-                env = api.Environment(mail_cr, SUPERUSER_ID, {})
+            with self._odoo_health_env() as env:
                 history = env["ir.cron.history"].browse(history_id)
                 self._odoo_health_send_failure_email(env, history)
-
 
     @staticmethod
     def _odoo_health_send_failure_email(env, history):

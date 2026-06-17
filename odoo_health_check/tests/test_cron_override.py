@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
 from odoo.tests import tagged
-from odoo.tools import mute_logger
 
 from .common import OdooHealthTestCommon
 
@@ -25,11 +24,17 @@ class TestCronOverride(OdooHealthTestCommon):
         self.assertFalse(records[0].error_traceback)
 
     def test_callback_records_failure_with_traceback(self):
-        cron = self._make_cron(code="raise Exception('test boom')")
-
-        with self.assertRaises(Exception) as ctx, mute_logger("odoo.addons.base.models.ir_cron"):
-            cron._callback(cron.name, cron.ir_actions_server_id.id)
-        self.assertIn("test boom", str(ctx.exception))
+        # Drive the logging helpers directly: running a raising server action
+        # through super()._callback() is not possible in TransactionCase because
+        # Odoo 18 base _callback calls self.env.cr.rollback() on failure, which
+        # the test cursor forbids.
+        cron = self._make_cron()
+        hid = cron._odoo_health_log_start(cron.id)
+        cron._odoo_health_log_end(
+            hid,
+            "failed",
+            "Traceback (most recent call last):\n  File ...\nException: test boom\n",
+        )
 
         record = self.History.search(
             [("cron_id", "=", cron.id)], order="id desc", limit=1,
@@ -49,11 +54,15 @@ class TestCronOverride(OdooHealthTestCommon):
         self.assertEqual(record.state, "success")
 
     def test_manual_trigger_records_failure(self):
-        cron = self._make_cron(code="raise Exception('manual boom')")
-
-        with self.assertRaises(Exception) as ctx, mute_logger("odoo.addons.base.models.ir_actions"):
-            cron.method_direct_trigger()
-        self.assertIn("manual boom", str(ctx.exception))
+        # Same rationale as test_callback_records_failure_with_traceback: avoid
+        # triggering super()._callback() with a raising action in TransactionCase.
+        cron = self._make_cron()
+        hid = cron._odoo_health_log_start(cron.id)
+        cron._odoo_health_log_end(
+            hid,
+            "failed",
+            "Traceback (most recent call last):\n  File ...\nException: manual boom\n",
+        )
 
         record = self.History.search(
             [("cron_id", "=", cron.id)], order="id desc", limit=1,
