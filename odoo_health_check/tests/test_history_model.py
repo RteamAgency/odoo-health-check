@@ -85,6 +85,14 @@ class TestCronHistoryModel(OdooHealthTestCommon):
         self.assertEqual(removed, 0)
         self.assertTrue(old.exists())
 
+        # The settings help says "0 or negative disables cleanup".
+        self.Params.set_param("odoo_health_check.retention_days", "-5")
+
+        removed = self.History._cron_cleanup_history()
+
+        self.assertEqual(removed, 0)
+        self.assertTrue(old.exists())
+
     def test_cleanup_ignores_invalid_param(self):
         cron = self._make_cron()
         now = fields.Datetime.now()
