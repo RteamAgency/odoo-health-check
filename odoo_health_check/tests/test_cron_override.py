@@ -27,9 +27,8 @@ class TestCronOverride(OdooHealthTestCommon):
     def test_callback_records_failure_with_traceback(self):
         cron = self._make_cron(code="raise Exception('test boom')")
 
-        with self.assertRaises(Exception) as ctx, mute_logger("odoo.addons.base.models.ir_cron"):
-            cron._callback(cron.name, cron.ir_actions_server_id.id)
-        self.assertIn("test boom", str(ctx.exception))
+        exc = self._run_failing_callback(cron)
+        self.assertIn("test boom", str(exc))
 
         record = self.History.search(
             [("cron_id", "=", cron.id)], order="id desc", limit=1,
@@ -39,27 +38,26 @@ class TestCronOverride(OdooHealthTestCommon):
         self.assertTrue(record.date_end)
 
     def test_manual_trigger_records_success(self):
-        cron = self._make_cron(code="pass")
+        cron = self._make_cron(code="pass", active=True)
 
         cron.method_direct_trigger()
 
-        record = self.History.search(
-            [("cron_id", "=", cron.id)], order="id desc", limit=1,
-        )
-        self.assertEqual(record.state, "success")
+        records = self.History.search([("cron_id", "=", cron.id)])
+        self.assertEqual(len(records), 1, "one history row per manual run")
+        self.assertEqual(records.state, "success")
 
     def test_manual_trigger_records_failure(self):
-        cron = self._make_cron(code="raise Exception('manual boom')")
+        """Since Odoo 19 a manual run goes through _process_job: the failure is
+        logged and returned to the client, not raised."""
+        cron = self._make_cron(code="raise Exception('manual boom')", active=True)
 
-        with self.assertRaises(Exception) as ctx, mute_logger("odoo.addons.base.models.ir_actions"):
+        with mute_logger("odoo.addons.base.models.ir_cron"):
             cron.method_direct_trigger()
-        self.assertIn("manual boom", str(ctx.exception))
 
-        record = self.History.search(
-            [("cron_id", "=", cron.id)], order="id desc", limit=1,
-        )
-        self.assertEqual(record.state, "failed")
-        self.assertIn("manual boom", record.error_traceback or "")
+        records = self.History.search([("cron_id", "=", cron.id)])
+        self.assertEqual(len(records), 1, "one history row per manual run")
+        self.assertEqual(records.state, "failed")
+        self.assertIn("manual boom", records.error_traceback or "")
 
     def test_cron_survives_missing_history_id(self):
         """If _odoo_health_log_start returns None (its own exception path),

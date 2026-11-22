@@ -1,5 +1,4 @@
 from odoo.tests import tagged
-from odoo.tools import mute_logger
 
 from .common import OdooHealthTestCommon
 
@@ -16,8 +15,7 @@ class TestFailureEmail(OdooHealthTestCommon):
         Mail = self.env["mail.mail"]
         before = Mail.search_count([])
 
-        with self.assertRaises(ValueError), mute_logger("odoo.addons.base.models.ir_cron"):
-            cron._callback(cron.name, cron.ir_actions_server_id.id)
+        self.assertIsInstance(self._run_failing_callback(cron), ValueError)
 
         self.assertEqual(Mail.search_count([]) - before, 1)
         mail = Mail.search([], order="id desc", limit=1)
@@ -30,8 +28,7 @@ class TestFailureEmail(OdooHealthTestCommon):
         Mail = self.env["mail.mail"]
         before = Mail.search_count([])
 
-        with self.assertRaises(ValueError), mute_logger("odoo.addons.base.models.ir_cron"):
-            cron._callback(cron.name, cron.ir_actions_server_id.id)
+        self.assertIsInstance(self._run_failing_callback(cron), ValueError)
 
         self.assertEqual(Mail.search_count([]), before)
 
@@ -50,8 +47,7 @@ class TestFailureEmail(OdooHealthTestCommon):
         cron = self._make_cron(code="raise ValueError('multi recipient')")
         Mail = self.env["mail.mail"]
 
-        with self.assertRaises(ValueError), mute_logger("odoo.addons.base.models.ir_cron"):
-            cron._callback(cron.name, cron.ir_actions_server_id.id)
+        self.assertIsInstance(self._run_failing_callback(cron), ValueError)
 
         mail = Mail.search([], order="id desc", limit=1)
         self.assertEqual(mail.email_to, "a@x.com,b@y.com")
