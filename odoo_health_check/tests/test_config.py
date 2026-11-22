@@ -12,7 +12,7 @@ class TestConfigSettings(OdooHealthTestCommon):
         })
         settings.execute()
 
-        stored = self.Params.get_param("odoo_health_check.notify_emails")
+        stored = self.Params.get_str("odoo_health_check.notify_emails")
         self.assertEqual(stored, "a@x.com,b@y.com")
 
     def test_retention_days_roundtrip_via_settings(self):
@@ -21,7 +21,7 @@ class TestConfigSettings(OdooHealthTestCommon):
         })
         settings.execute()
 
-        stored = self.Params.get_param("odoo_health_check.retention_days")
+        stored = self.Params.get_str("odoo_health_check.retention_days")
         self.assertEqual(stored, "45")
 
     def test_retention_cleanup_cron_registered_and_active(self):

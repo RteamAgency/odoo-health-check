@@ -110,11 +110,7 @@ class HealthCheckResult(models.Model):
         rather than relying on res_config_settings so a fresh install
         without saved settings still has sane thresholds.
         """
-        raw = self.env["ir.config_parameter"].sudo().get_param(key, default)
-        try:
-            return float(raw)
-        except (TypeError, ValueError):
-            return default
+        return self.env["ir.config_parameter"].sudo().get_float(key, default)
 
     @api.model
     def _disk_thresholds(self):
@@ -257,8 +253,8 @@ class HealthCheckResult(models.Model):
 
     @api.model
     def _get_disk_alert_recipients(self):
-        raw = self.env["ir.config_parameter"].sudo().get_param(
-            "odoo_health_check.disk_alert_emails", default="",
+        raw = self.env["ir.config_parameter"].sudo().get_str(
+            "odoo_health_check.disk_alert_emails", "",
         ) or ""
         return [e.strip() for e in raw.split(",") if e.strip()]
 
@@ -392,8 +388,8 @@ class HealthCheckResult(models.Model):
 
     @api.model
     def _get_pg_report_recipients(self):
-        raw = self.env["ir.config_parameter"].sudo().get_param(
-            "odoo_health_check.pg_report_emails", default="",
+        raw = self.env["ir.config_parameter"].sudo().get_str(
+            "odoo_health_check.pg_report_emails", "",
         ) or ""
         return [e.strip() for e in raw.split(",") if e.strip()]
 

@@ -75,8 +75,8 @@ class IrCronHistory(models.Model):
         Retention days comes from `odoo_health_check.retention_days`
         (default 30). A non-positive value disables cleanup.
         """
-        param = self.env["ir.config_parameter"].sudo().get_param(
-            "odoo_health_check.retention_days", default="30",
+        param = self.env["ir.config_parameter"].sudo().get_str(
+            "odoo_health_check.retention_days", "30",
         )
         try:
             retention = int(param)

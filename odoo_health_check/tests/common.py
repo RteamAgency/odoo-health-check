@@ -33,7 +33,7 @@ class OdooHealthTestCommon(TransactionCase):
 
     def setUp(self):
         super().setUp()
-        self.registry_enter_test_mode()
+        self.enterContext(self.registry_test_mode())
         callback_patcher = patch.object(BaseIrCron, "_callback", _callback_without_commit)
         callback_patcher.start()
         self.addCleanup(callback_patcher.stop)

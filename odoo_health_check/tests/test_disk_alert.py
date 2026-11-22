@@ -24,7 +24,7 @@ class TestDiskThresholds(OdooHealthTestCommon):
         cls.Result = cls.env["health.check.result"]
 
     def _set(self, key, value):
-        self.Params.set_param(f"odoo_health_check.{key}", str(value))
+        self.Params.set_str(f"odoo_health_check.{key}", str(value))
 
     def test_defaults_when_not_configured(self):
         self._set("disk_warn_pct", "")
@@ -71,7 +71,7 @@ class TestDiskAlertEmail(OdooHealthTestCommon):
         cls.Mail = cls.env["mail.mail"]
 
     def _set_recipients(self, value):
-        self.Params.set_param("odoo_health_check.disk_alert_emails", value)
+        self.Params.set_str("odoo_health_check.disk_alert_emails", value)
 
     def _seed(self, check_type, status):
         """Create a prior result row with given status without going through
@@ -199,7 +199,7 @@ class TestDiskAlertConfig(OdooHealthTestCommon):
             "odoo_health_disk_warn_pct": 75.5,
         })
         settings.execute()
-        stored = self.Params.get_param("odoo_health_check.disk_warn_pct")
+        stored = self.Params.get_str("odoo_health_check.disk_warn_pct")
         self.assertEqual(float(stored), 75.5)
 
     def test_critical_pct_roundtrip(self):
@@ -207,7 +207,7 @@ class TestDiskAlertConfig(OdooHealthTestCommon):
             "odoo_health_disk_critical_pct": 92.0,
         })
         settings.execute()
-        stored = self.Params.get_param("odoo_health_check.disk_critical_pct")
+        stored = self.Params.get_str("odoo_health_check.disk_critical_pct")
         self.assertEqual(float(stored), 92.0)
 
     def test_alert_emails_roundtrip(self):
@@ -215,7 +215,7 @@ class TestDiskAlertConfig(OdooHealthTestCommon):
             "odoo_health_disk_alert_emails": "a@x.com,b@y.com",
         })
         settings.execute()
-        stored = self.Params.get_param("odoo_health_check.disk_alert_emails")
+        stored = self.Params.get_str("odoo_health_check.disk_alert_emails")
         self.assertEqual(stored, "a@x.com,b@y.com")
 
     def test_disk_alert_template_registered(self):

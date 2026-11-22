@@ -59,7 +59,7 @@ class IrCron(models.Model):
     @staticmethod
     def _odoo_health_send_failure_email(env, history):
         emails_param = (env["ir.config_parameter"].sudo()
-                        .get_param("odoo_health_check.notify_emails") or "").strip()
+                        .get_str("odoo_health_check.notify_emails") or "").strip()
         if not emails_param:
             return
         recipients = [e.strip() for e in emails_param.split(",") if e.strip()]

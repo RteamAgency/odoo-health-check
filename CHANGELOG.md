@@ -2,6 +2,18 @@
 
 All notable changes to this module are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Module versioning: `<odoo_major>.0.<major>.<minor>.<patch>`.
 
+## [20.0.1.0.3] - 2026-11-22
+
+Port to Odoo 20, on top of 19.0.1.0.3.
+
+* `odoo-bin upgrade_code --from 19.0`: access rights are `security/ir.access.csv`.
+* `ir.config_parameter.get_param` / `set_param` are gone in Odoo 20: the
+  module reads its settings with `get_str` / `get_float`; a value that is
+  not a number still falls back to the default threshold.
+* Tests enter Odoo 20's `registry_test_mode()` context; 82 / 82 on Odoo
+  20.0 community, and in GitHub Actions.
+* Store page and README target Odoo 20.
+
 ## [19.0.1.0.3] - 2026-11-22
 
 * **Run Manually recorded twice**: since Odoo 19, `method_direct_trigger`

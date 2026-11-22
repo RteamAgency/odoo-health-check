@@ -7,7 +7,7 @@ from .common import OdooHealthTestCommon
 class TestFailureEmail(OdooHealthTestCommon):
 
     def _set_notify(self, value):
-        self.Params.set_param("odoo_health_check.notify_emails", value)
+        self.Params.set_str("odoo_health_check.notify_emails", value)
 
     def test_failed_cron_with_recipients_enqueues_mail(self):
         self._set_notify("ops-test@example.com")

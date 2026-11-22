@@ -1,6 +1,6 @@
 {
     "name": "Odoo Health Check",
-    "version": "19.0.1.0.3",
+    "version": "20.0.1.0.3",
     "summary": "Cron execution history, disk monitoring, monthly PostgreSQL growth reports",
     "description": """
 Odoo Health Check
@@ -29,7 +29,6 @@ Targeted at Odoo 19 Enterprise. Community may work but is not tested.
     "depends": ["base", "mail"],
     "images": ["static/description/banner.png"],
     "data": [
-        "security/ir.model.access.csv",
         "data/mail_template_data.xml",
         "data/ir_cron_data.xml",
         "data/health_check_dashboard_data.xml",
@@ -38,6 +37,7 @@ Targeted at Odoo 19 Enterprise. Community may work but is not tested.
         "views/health_check_dashboard_views.xml",
         "views/res_config_settings_views.xml",
         "views/menu.xml",
+        "security/ir.access.csv",
     ],
     "assets": {
         "web.assets_web_dark": [

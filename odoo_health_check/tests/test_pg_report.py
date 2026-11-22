@@ -71,7 +71,7 @@ class TestPgReportRun(OdooHealthTestCommon):
         self.Result.search([("check_type", "=", "pg_report")]).unlink()
 
     def _set_recipients(self, value):
-        self.Params.set_param("odoo_health_check.pg_report_emails", value)
+        self.Params.set_str("odoo_health_check.pg_report_emails", value)
 
     def test_first_run_creates_ok_row_with_snapshot(self):
         self._set_recipients("")
@@ -167,7 +167,7 @@ class TestPgReportConfig(OdooHealthTestCommon):
             "odoo_health_pg_report_emails": "a@x.com,b@y.com",
         })
         settings.execute()
-        stored = self.Params.get_param("odoo_health_check.pg_report_emails")
+        stored = self.Params.get_str("odoo_health_check.pg_report_emails")
         self.assertEqual(stored, "a@x.com,b@y.com")
 
     def test_pg_monthly_template_registered(self):
