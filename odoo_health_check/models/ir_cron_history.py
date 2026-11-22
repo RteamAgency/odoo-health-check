@@ -3,7 +3,6 @@ import socket
 from datetime import timedelta
 
 from odoo import api, fields, models
-from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -76,12 +75,21 @@ class IrCronHistory(models.Model):
         Retention days comes from `odoo_health_check.retention_days`
         (default 30). A non-positive value disables cleanup.
         """
-        param = self.env["ir.config_parameter"].sudo().get_param(
-            "odoo_health_check.retention_days", default="30",
+        param = self.env["ir.config_parameter"].sudo().get_str(
+            "odoo_health_check.retention_days", "30",
         )
-        if not param.isdigit():
-            raise UserError("Invalid retention days")
-        retention = int(param)
+        try:
+            retention = int(param)
+        except (TypeError, ValueError):
+            # A daily cron that raised here would itself be reported as a
+            # failure every day; skip the cleanup and say why instead.
+            _logger.warning(
+                "odoo_health_check: retention_days %r is not a whole number, cleanup skipped",
+                param,
+            )
+            return 0
+        if retention <= 0:
+            return 0
         cutoff = fields.Datetime.now() - timedelta(days=retention)
         to_delete = self.search(
             [("date_start", "<", cutoff)], limit=batch_size, order="date_start asc",

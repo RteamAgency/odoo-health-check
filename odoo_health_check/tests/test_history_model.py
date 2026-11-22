@@ -62,7 +62,7 @@ class TestCronHistoryModel(OdooHealthTestCommon):
             "date_start": now - timedelta(days=5),
             "state": "success",
         })
-        self.Params.set_param("odoo_health_check.retention_days", "30")
+        self.Params.set_str("odoo_health_check.retention_days", "30")
 
         removed = self.History._cron_cleanup_history()
 
@@ -78,7 +78,15 @@ class TestCronHistoryModel(OdooHealthTestCommon):
             "date_start": now - timedelta(days=60),
             "state": "success",
         })
-        self.Params.set_param("odoo_health_check.retention_days", "0")
+        self.Params.set_str("odoo_health_check.retention_days", "0")
+
+        removed = self.History._cron_cleanup_history()
+
+        self.assertEqual(removed, 0)
+        self.assertTrue(old.exists())
+
+        # The settings help says "0 or negative disables cleanup".
+        self.Params.set_str("odoo_health_check.retention_days", "-5")
 
         removed = self.History._cron_cleanup_history()
 
@@ -93,7 +101,7 @@ class TestCronHistoryModel(OdooHealthTestCommon):
             "date_start": now - timedelta(days=60),
             "state": "success",
         })
-        self.Params.set_param("odoo_health_check.retention_days", "not-a-number")
+        self.Params.set_str("odoo_health_check.retention_days", "not-a-number")
 
         removed = self.History._cron_cleanup_history()
 

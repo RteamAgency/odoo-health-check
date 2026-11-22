@@ -9,6 +9,9 @@ _logger = logging.getLogger(__name__)
 class IrCron(models.Model):
     _inherit = "ir.cron"
 
+    # One history row per run of the cron's server action. Since Odoo 19,
+    # "Run Manually" (method_direct_trigger) goes through _process_job and
+    # this same _callback, so manual runs are recorded here too.
     def _callback(self, cron_name, server_action_id):
         cron_id = self.id
         history_id = self._odoo_health_log_start(cron_id)
@@ -19,17 +22,6 @@ class IrCron(models.Model):
             raise
         self._odoo_health_log_end(history_id, "success", None)
         return result
-
-    def method_direct_trigger(self):
-        for cron in self:
-            history_id = cron._odoo_health_log_start(cron.id)
-            try:
-                super(IrCron, cron).method_direct_trigger()
-            except Exception:
-                cron._odoo_health_log_end(history_id, "failed", traceback.format_exc())
-                raise
-            cron._odoo_health_log_end(history_id, "success", None)
-        return True
 
     def _odoo_health_log_start(self, cron_id):
         with self.pool.cursor() as new_cr:
@@ -67,7 +59,7 @@ class IrCron(models.Model):
     @staticmethod
     def _odoo_health_send_failure_email(env, history):
         emails_param = (env["ir.config_parameter"].sudo()
-                        .get_param("odoo_health_check.notify_emails") or "").strip()
+                        .get_str("odoo_health_check.notify_emails") or "").strip()
         if not emails_param:
             return
         recipients = [e.strip() for e in emails_param.split(",") if e.strip()]

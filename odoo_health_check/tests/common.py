@@ -1,18 +1,27 @@
-from contextlib import contextmanager
 from unittest.mock import patch
 
+from odoo.addons.base.models.ir_cron import IrCron as BaseIrCron
 from odoo.tests import TransactionCase
+from odoo.tools import mute_logger
+
+
+def _callback_without_commit(self, cron_name, server_action_id):
+    """Odoo's ir.cron._callback runs the server action, then commits, or
+    rolls back and re-raises. A test transaction forbids both, and a rollback
+    to the job's savepoint would also take the history rows the module wrote
+    in its own (test) cursor. The tests run the action alone: the module's
+    override around it is what they check."""
+    self.ensure_one()
+    self.env["ir.actions.server"].browse(server_action_id).run()
 
 
 class OdooHealthTestCommon(TransactionCase):
     """Shared setup for odoo_health_check tests.
 
-    The module isolates history writes in an independent cursor
-    (`self.pool.cursor()`) so a cron's own rollback never erases the
-    audit trail. That isolation, unmodified, would also hide test-seeded
-    rows from the test's transactional rollback. We patch the registry
-    cursor factory to hand out the test's own cursor, so history writes
-    ride the test savepoint and get cleaned up automatically.
+    The module writes history in its own cursor (`self.pool.cursor()`) so a
+    cron's rollback never erases the audit trail. In registry test mode those
+    cursors wrap the test's cursor, so the rows ride the test transaction and
+    are rolled back with it.
     """
 
     @classmethod
@@ -24,16 +33,24 @@ class OdooHealthTestCommon(TransactionCase):
 
     def setUp(self):
         super().setUp()
+        self.enterContext(self.registry_test_mode())
+        callback_patcher = patch.object(BaseIrCron, "_callback", _callback_without_commit)
+        callback_patcher.start()
+        self.addCleanup(callback_patcher.stop)
 
-        @contextmanager
-        def _reuse_test_cursor():
-            yield self.env.cr
+    def _run_failing_callback(self, cron):
+        """Run a cron whose action raises; return the exception.
 
-        self._cursor_patcher = patch.object(
-            self.env.registry, "cursor", _reuse_test_cursor,
-        )
-        self._cursor_patcher.start()
-        self.addCleanup(self._cursor_patcher.stop)
+        Not self.assertRaises: Odoo's version rolls back a savepoint when the
+        exception arrives, and would take the history row and the alert mail
+        with it. The action raises a plain Python exception, so the
+        transaction stays usable without one."""
+        try:
+            with mute_logger("odoo.addons.base.models.ir_cron"):
+                cron._callback(cron.name, cron.ir_actions_server_id.id)
+        except Exception as exc:  # noqa: BLE001
+            return exc
+        self.fail("the cron's server action did not raise")
 
     def _make_cron(self, name="oh_test", code="pass", active=False):
         server_action = self.env["ir.actions.server"].create({
